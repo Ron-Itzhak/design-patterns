@@ -22,7 +22,8 @@
     "test:e2e": "vitest run --config ./vitest.config.e2e.ts",
     "run:builder": "tsx patterns/builder/runner.ts",
     "run:adapter": "tsx patterns/adapter/runner.ts",
-    "run:flyweight": "node --expose-gc --import tsx patterns/flyweight/runner.ts"
+    "run:flyweight": "node --expose-gc --import tsx patterns/flyweight/runner.ts",
+    "run:chain": "tsx patterns/chain-of-responsibility/runner.ts"
   },
   "dependencies": {
     "@nestjs/common": "^12.0.1",
