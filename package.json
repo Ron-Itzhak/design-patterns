@@ -24,7 +24,8 @@
     "run:adapter": "tsx patterns/adapter/runner.ts",
     "run:flyweight": "node --expose-gc --import tsx patterns/flyweight/runner.ts",
     "run:chain": "tsx patterns/chain-of-responsibility/runner.ts",
-    "run:strategy": "tsx patterns/strategy/runner.ts"
+    "run:strategy": "tsx patterns/strategy/runner.ts",
+    "run:singleton": "tsx patterns/singleton/singleton.ts"
   },
   "dependencies": {
     "@nestjs/common": "^12.0.1",

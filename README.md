@@ -1,114 +1,117 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Design Patterns in TypeScript
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Small, simplified practice implementations of classic design patterns. Each pattern lives in its own folder under [patterns/](patterns/) with:
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+- the implementation,
+- a Vitest spec (`*.spec.ts`) that proves the behaviour,
+- a light `runner.ts` you can execute by hand to see the pattern working.
 
-## Description
+> The repo also contains a NestJS skeleton (`src/`, `test/`). It is not part of these exercises and can be ignored.
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
-
-## Project setup
+## Setup
 
 ```bash
-$ npm install
+npm install
 ```
 
-## Compile and run the project
+Requires Node 20+ (developed on Node 24).
 
-```bash
-# development
-$ npm run start
+## Run everything
 
-# watch mode
-$ npm run start:dev
+| Goal | Command |
+| --- | --- |
+| Run all pattern tests once | `npm test` |
+| Watch mode | `npx vitest` |
+| Run one pattern's tests | `npx vitest run patterns/<folder>` |
+| Run a single test by name | `npx vitest run patterns/<folder> -t "part of the test name"` |
+| Type-check | `npx tsc --noEmit -p tsconfig.json` |
 
-# production mode
-$ npm run start:prod
-```
+## The patterns
 
-## Run tests
+| Pattern | Type | Scenario | Folder | Run the demo |
+| --- | --- | --- | --- | --- |
+| Singleton | Creational | One frozen settings object per process | [patterns/singleton](patterns/singleton) | `npm run run:singleton` |
+| Builder | Creational | Building an immutable report request | [patterns/builder](patterns/builder) | `npm run run:builder` |
+| Adapter | Structural | Normalising two shipping providers | [patterns/adapter](patterns/adapter) | `npm run run:adapter` |
+| Flyweight | Structural | Sharing port metadata across many rates | [patterns/flyweight](patterns/flyweight) | `npm run run:flyweight` |
+| Chain of Responsibility | Behavioral | API request checks (auth, validation, quota, eligibility) | [patterns/chain-of-responsibility](patterns/chain-of-responsibility) | `npm run run:chain` |
+| Strategy | Behavioral | Interchangeable retry policies | [patterns/strategy](patterns/strategy) | `npm run run:strategy` |
 
-```bash
-# unit tests
-$ npm run test
+---
 
-# e2e tests
-$ npm run test:e2e
+## Singleton
 
-# test coverage
-$ npm run test:cov
-```
+One settings object, loaded once, frozen, shared by the whole process. The folder shows several ways to do it so they can be compared. See its own [README](patterns/singleton/README.md) for details.
 
-## Deployment
+- **Demo:** `npm run run:singleton` prints `PASS` or `FAIL` for each requirement (exit code 0 if all pass).
+- **Tests:** `npx vitest run patterns/singleton`
+- **Behaviour:** repeated calls return the same reference, the config cannot be mutated, re-initialising with the same options is accepted, and re-initialising with conflicting options is rejected.
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+## Builder
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+A fluent `ReportRequestBuilder` assembles an immutable `ReportRequest` (date range, filters, format, sort, compression).
 
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
+- **Demo:** `npm run run:builder` builds two different reports with the same API, then shows two validation failures.
+- **Tests:** `npx vitest run patterns/builder`
+- **Behaviour:**
+  - Every setter returns `this`, so calls chain.
+  - All validation happens in `build()`: date range and format are required, an inverted date range is rejected, and `pdf` with compression is rejected.
+  - Each `build()` returns a new, deeply frozen object. Changing the builder afterwards, or building twice, never affects an earlier result.
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+## Adapter
 
-## Observability
+Two incompatible third-party shipping clients are translated into one internal contract, `ShippingRateProvider.getQuote()` returning a `RateQuote`.
 
-In production applications, observability is essential for understanding how your system behaves, detecting issues early, and maintaining reliable performance.
+- **Demo:** `npm run run:adapter` prints the normalised quote from each provider, the cheapest of both, and a deliberately malformed provider response being rejected.
+- **Tests:** `npx vitest run patterns/adapter`
+- **Behaviour:**
+  - Provider A (`{ price: 120, currency: "USD" }`) and Provider B (`{ total_amount: 12000, currency_code: "USD", minor_units: true }`) both become `{ amountMinor: 12000, currency: "USD" }`.
+  - Money is converted to integer minor units, with no floating-point errors.
+  - Invalid currencies, timeouts and malformed payloads are all converted to one `ShippingProviderError` with a `code`.
+  - Application code (`cheapestQuote`) only knows the interface.
 
-[NestJS Observe](https://observe.nestjs.com) automatically instruments your NestJS application, giving you deep visibility into your system with minimal setup:
+## Flyweight
 
-- **Distributed tracing:** Follow requests across services and understand how they flow through your system.
-- **Waterfall analysis:** Visualize request execution and identify slow operations, bottlenecks, and unexpected delays.
-- **Performance analysis:** Analyze application performance in real time and quickly pinpoint areas that need optimization.
-- **Metrics:** Track key application and infrastructure metrics to understand system health and performance trends.
-- **Logging:** Centralize and correlate logs with traces and other telemetry to make debugging easier.
-- **Error tracking:** Detect errors quickly and investigate their root causes with the surrounding context.
-- **SLA monitoring:** Track service-level objectives and identify when your application is approaching or exceeding defined thresholds.
-- **Alarms and alerts:** Set up alerts for critical errors, performance degradation, SLA violations, and other anomalies so your team can react quickly.
+`PortMetadataFactory` returns one shared, frozen metadata object per port code, while each shipping rate keeps its own price, timestamp and shipment ID.
 
-## Resources
+- **Demo:** `npm run run:flyweight` builds 1M rates with and without the flyweight and prints object counts and heap growth. The script runs Node with `--expose-gc` so the heap readings are less noisy. The numbers are illustrative and vary by machine.
+- **Tests:** `npx vitest run patterns/flyweight`
+- **Behaviour:**
+  - The same port code (in any spelling, like `" nlrtm "`) returns the same object.
+  - Different ports return different objects.
+  - The shared metadata is frozen, and attempts to change it fail.
+  - The factory reports how many objects were requested vs actually created.
 
-Check out a few resources that may come in handy when working with NestJS:
+## Chain of Responsibility
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Auto-instrument your application with [NestJS Observer](https://observer.nestjs.com). Distributed tracing, metrics, and logging made easy. Error tracking and performance monitoring for your NestJS applications.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+A request passes through ordered handlers: `AuthHandler`, `ValidationHandler`, `RateLimitHandler`, `EligibilityHandler`, and only then does the command run.
 
-## Support
+- **Demo:** `npm run run:chain` sends six requests (one valid, and one failing at each stage) and prints which handlers ran and the typed result.
+- **Tests:** `npx vitest run patterns/chain-of-responsibility`
+- **Behaviour:**
+  - A handler rejects by returning a failure without calling `next()`, and the chain stops at the first rejection.
+  - The result is typed: success, or a rejection naming the `stage` and `reason`.
+  - Handlers run in the exact order given, and handlers may be async.
+  - Calling `next()` twice throws an error.
+  - After a rejection, later handlers and the command never run (so quota isn't used up by invalid requests).
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+## Strategy
 
-## Stay in touch
+A `RetryStrategy` (`shouldRetry`, `nextDelayMs`) is swapped behind `executeWithRetry()`: `NoRetry`, `FixedDelayRetry`, `ExponentialBackoffRetry` (cap and optional jitter).
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+- **Demo:** `npm run run:strategy` runs a flaky fake provider under each policy and prints the result and the delays that would have been waited. A fake sleep records delays, so the demo finishes instantly.
+- **Tests:** `npx vitest run patterns/strategy`
+- **Behaviour:**
+  - Attempts are numbered from 1, and `attempt` means the attempt that just failed.
+  - 5xx, 429 and network errors are retried, and other 4xx errors (400, 404) are not.
+  - A `Retry-After` value on a 429 is respected, and the wait is never shorter than it.
+  - After the last attempt, the last error is thrown.
+  - `sleep` and `random` are injected, so tests check exact delays.
 
-## License
+---
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+## Adding a new pattern
+
+1. Create `patterns/<name>/` with the implementation, `<name>.spec.ts` and `runner.ts`.
+2. Add a script to `package.json`, e.g. `"run:<name>": "tsx patterns/<name>/runner.ts"`.
+3. Add a row and a section to this README.
